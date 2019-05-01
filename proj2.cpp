@@ -3,13 +3,27 @@
 #include <vector>
 
 /*-------------------------------------------------------------------------*/
+typedef struct vertex{
+    int height;
+    int excess;
+    std::vector<int> adjs;
+}Vertex;
 
+typedef struct edge{
+    int capacity;
+    int id;
+    int flow; 
+}Edge;
+
+
+/*-------------------------------------------------------------------------*/
 int readInput();
 
 
 int main(){
     readInput();
 }
+
 
 int readInput() {
     int i;
