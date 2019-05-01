@@ -55,3 +55,29 @@ int readInput() {
     }
     return 0;
 }
+
+/*
+Discharge(u)
+    while (e[u] > 0)
+        do v = current[u]
+            if v = NIL
+                then Relabel(u)
+                    current[u] = head[N[u]]
+            else if cf(u,v) > 0 and h[u] = h[v] +1
+                then Push(u,v)
+            else current[u] = next_neighbor[v]*/
+
+/*
+Relabel-To-Front(G,s,t)
+    Initialize-Preflow(G,s)
+    L = V − {s,t} por qualquer ordem
+    for each u ∈ V − {s,t}
+        do current[u] = head[N[u]]
+    u = head[L]
+    while u 6= NIL
+        do oldh = h[u]
+            Discharge(u)
+            if h[u] > oldh
+               then colocar u na frente da lista L
+            u = next[u]
+    return f*/
