@@ -4,6 +4,17 @@
 
 /*-------------------------------------------------------------------------*/
 
+struct Vertex {
+    int height;
+    int ex_flow;
+};
+
+struct Edge {
+    int flow;
+    int capacity;
+    int id_vertex;
+};
+
 int readInput();
 
 
