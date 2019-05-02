@@ -95,9 +95,7 @@ void printGraph() {
         for(auto adj: graph[i].adjs)
             printf("capacidade: %d\nid: %d\bflow: %d\n", adj.capacity, adj.id, adj.flow);
     }
-
-    printf("O LAMEGO E UM BURRO DO CRLH\n");
-
+    
     for(i = numberSuppliers; i < numberVertexs -2; i++){
         printf("altura: %d\nexcesso: %d\nlimite: %d\n", graph[i].height, graph[i].excess_flow, graph[i].limit);
         for(j = 1; j < graph[i].adjs.size(); j++){
