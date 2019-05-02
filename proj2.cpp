@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>
-
+#include <limits.h>
 /*-------------------------------------------------------------------------*/
 
 typedef struct edge{
@@ -21,6 +21,10 @@ typedef struct vertex{
 /*-------------------------------------------------------------------------*/
 int readInput();
 void printGraph();
+Vertex inicializeVertex(int height, int flow, int limit);
+Edge inicializeEdge(int capacity, int id, int flow);
+
+/*----------------Global Vars-----------------*/
 std::vector<Vertex> graph;
 int numberSuppliers, numberVertexs;
 
@@ -43,20 +47,17 @@ int readInput() {
         std::vector<Vertex> graph(numberVertexs);
     }
 
-    Vertex source;
-    source.height = numberVertexs;
-    source.excess_flow = 0;
-    source.limit = 0;
+    Vertex source = inicializeVertex(numberVertexs, 0 , 0);
     graph.push_back(source);
+
+    Vertex target = inicializeVertex(0, 0, INT_MAX);
+    graph.push_back(target);
 
     for(i = 0; i < numberSuppliers; i++) {
         if(scanf("%d ", &productionOfSupplier) != 1) {
             return -1;
         }else{
-            Vertex supplier;
-            supplier.height = 0;
-            supplier.excess_flow = productionOfSupplier;
-            supplier.limit = productionOfSupplier;
+            Vertex supplier = inicializeVertex(0, productionOfSupplier, productionOfSupplier);
             graph.push_back(supplier);
         }
     }
@@ -65,22 +66,17 @@ int readInput() {
         if(scanf("%d ", &capacityOfStation) != 1) {
             return -1;
         }else{
-            Vertex station;
-            station.height = 0;
-            station.excess_flow = 0;
-            station.limit = capacityOfStation;
+            Vertex station = inicializeVertex(0, 0, capacityOfStation);
             graph.push_back(station);
         }
     }
 
     for(i = 0; i < numberConnections; i++) {
         if(scanf("%d %d %d", &originConnection, &destinationConnection,
-        &capacityConnection) != 1) {
+        &capacityConnection) != 3) {
             return -1;
         }else{
-            Edge connection;
-            connection.id = destinationConnection;
-            connection.capacity = capacityConnection;
+            Edge connection = inicializeEdge(capacityConnection, destinationConnection, 0);
             graph[originConnection].adjs.push_back(connection);
         }
     }
@@ -89,24 +85,31 @@ int readInput() {
 
 void printGraph() {
     int i;
-    std::size_t j;
-    for(i = 0; i < numberSuppliers; i++){
+    for(i = 0; i < numberVertexs; i++){
+        printf("-------------------%d----------------\n", i);
         printf("altura: %d\nexcesso: %d\nlimite: %d\n", graph[i].height, graph[i].excess_flow, graph[i].limit);
+        printf("---------connections-------\n");
         for(auto adj: graph[i].adjs)
-            printf("capacidade: %d\nid: %d\bflow: %d\n", adj.capacity, adj.id, adj.flow);
-    }
-    
-    for(i = numberSuppliers; i < numberVertexs -2; i++){
-        printf("altura: %d\nexcesso: %d\nlimite: %d\n", graph[i].height, graph[i].excess_flow, graph[i].limit);
-        for(j = 1; j < graph[i].adjs.size(); j++){
-            printf("capacidade: %d\nid: %d\bflow: %d\n", graph[i].adjs[j].capacity, graph[i].adjs[j].id, graph[i].adjs[j].flow);        
-        }
-        printf("%lu\n", graph[2].adjs.size());
+            printf("capacidade: %d\nid: %d\nflow: %d\n", adj.capacity, adj.id, adj.flow);
     }
 }
 
 
+Vertex inicializeVertex(int height, int flow, int limit){
+    Vertex v;
+    v.height = height;
+    v.excess_flow = flow;
+    v.limit = limit;
+    return v;
+}
 
+Edge inicializeEdge(int capacity, int id, int flow){
+    Edge e;
+    e.capacity = capacity;
+    e.id = id;
+    e.flow = flow;
+    return e;
+}
 /*
 Discharge(u)
     while (e[u] > 0)
