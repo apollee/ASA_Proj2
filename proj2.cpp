@@ -27,6 +27,7 @@ Edge inicializeEdge(int capacity, int id, int flow);
 /*----------------Global Vars-----------------*/
 std::vector<Vertex> graph;
 int numberSuppliers, numberVertexs;
+int listRelabel;
 
 int main(){
     readInput();
@@ -85,7 +86,7 @@ int readInput() {
 
 void printGraph() {
     int i;
-    for(i = 0; i < numberVertexs; i++){
+     for(i = 0; i < numberVertexs; i++){
         printf("-------------------%d----------------\n", i);
         printf("altura: %d\nexcesso: %d\nlimite: %d\n", graph[i].height, graph[i].excess_flow, graph[i].limit);
         printf("---------connections-------\n");
@@ -110,6 +111,33 @@ Edge inicializeEdge(int capacity, int id, int flow){
     e.flow = flow;
     return e;
 }
+
+void Push(Vertex v1, Vertex v2, Edge edge){
+    int current_flow;
+    current_flow = min(v1.excess_flow, edge.capacity);
+    edge.flow += current_flow;
+    v1.excess_flow -= current_flow;
+    v2.excess_flow += current_flow;
+}
+
+void Relabel(Vertex v1){
+    /* */
+}
+
+Vertex getVertex(int id){
+    return graph[id];
+}
+
+int min(int v1, int v2){
+    return (v1 > v2 ? v2: v1);
+}
+
+/*int min_edges(Vertex vertex){
+    for(auto adj: vertex.adjs){
+        
+    }
+}*/
+
 /*
 Discharge(u)
     while (e[u] > 0)
