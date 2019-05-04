@@ -15,14 +15,16 @@ typedef struct vertex{
     int excess_flow;
     int limit;
     std::vector<Edge> adjs;
+    std::vector<Edge> back_edges;
 }Vertex;
 
 
 /*-------------------------------------------------------------------------*/
 int readInput();
+int min(int v1, int v2);
 void printGraph();
-Vertex inicializeVertex(int height, int flow, int limit);
-Edge inicializeEdge(int capacity, int id, int flow);
+Vertex initializeVertex(int height, int flow, int limit);
+Edge initializeEdge(int capacity, int id, int flow);
 
 /*----------------Global Vars-----------------*/
 std::vector<Vertex> graph;
@@ -48,18 +50,21 @@ int readInput() {
         std::vector<Vertex> graph(numberVertexs);
     }
 
-    Vertex source = inicializeVertex(numberVertexs, 0 , 0);
-    graph.push_back(source);
-
-    Vertex target = inicializeVertex(0, 0, INT_MAX);
+    Vertex target = initializeVertex(0, 0, INT_MAX);
     graph.push_back(target);
 
+    Vertex source = initializeVertex(numberVertexs, 0 , 0);
+    graph.push_back(source);
+
+  
     for(i = 0; i < numberSuppliers; i++) {
         if(scanf("%d ", &productionOfSupplier) != 1) {
             return -1;
         }else{
-            Vertex supplier = inicializeVertex(0, productionOfSupplier, productionOfSupplier);
+            Vertex supplier = initializeVertex(0, 0, productionOfSupplier);
             graph.push_back(supplier);
+            Edge s_v = initializeEdge(INT_MAX, 0, 0);
+            graph[i + 2].adjs.push_back(s_v);
         }
     }
 
@@ -67,7 +72,7 @@ int readInput() {
         if(scanf("%d ", &capacityOfStation) != 1) {
             return -1;
         }else{
-            Vertex station = inicializeVertex(0, 0, capacityOfStation);
+            Vertex station = initializeVertex(0, 0, capacityOfStation);
             graph.push_back(station);
         }
     }
@@ -77,8 +82,10 @@ int readInput() {
         &capacityConnection) != 3) {
             return -1;
         }else{
-            Edge connection = inicializeEdge(capacityConnection, destinationConnection, 0);
-            graph[originConnection].adjs.push_back(connection);
+            Edge connection = initializeEdge(capacityConnection, originConnection, 0);
+            graph[destinationConnection].adjs.push_back(connection);
+            Edge back = initializeEdge(0, destinationConnection, 0);
+            graph[originConnection].back_edges.push_back(connection);
         }
     }
     return 0;
@@ -92,11 +99,14 @@ void printGraph() {
         printf("---------connections-------\n");
         for(auto adj: graph[i].adjs)
             printf("capacidade: %d\nid: %d\nflow: %d\n", adj.capacity, adj.id, adj.flow);
+        printf("---------connections back edges-------\n");
+        for(auto adj: graph[i].adjs)
+            printf("capacidade: %d\nid: %d\nflow: %d\n", adj.capacity, adj.id, adj.flow);
     }
 }
 
 
-Vertex inicializeVertex(int height, int flow, int limit){
+Vertex initializeVertex(int height, int flow, int limit){
     Vertex v;
     v.height = height;
     v.excess_flow = flow;
@@ -104,7 +114,7 @@ Vertex inicializeVertex(int height, int flow, int limit){
     return v;
 }
 
-Edge inicializeEdge(int capacity, int id, int flow){
+Edge initializeEdge(int capacity, int id, int flow){
     Edge e;
     e.capacity = capacity;
     e.id = id;
@@ -112,16 +122,17 @@ Edge inicializeEdge(int capacity, int id, int flow){
     return e;
 }
 
-void Push(Vertex v1, Vertex v2, Edge edge){
+void Push(Vertex v1, Vertex v2, Edge edge, Edge back){
     int current_flow;
     current_flow = min(v1.excess_flow, edge.capacity);
     edge.flow += current_flow;
+    back.flow -= current_flow;
     v1.excess_flow -= current_flow;
     v2.excess_flow += current_flow;
 }
 
 void Relabel(Vertex v1){
-    /* */
+    v1.height = 1 + min_edges(v1);
 }
 
 Vertex getVertex(int id){
@@ -132,11 +143,16 @@ int min(int v1, int v2){
     return (v1 > v2 ? v2: v1);
 }
 
-/*int min_edges(Vertex vertex){
-    for(auto adj: vertex.adjs){
-        
+int min_edges(Vertex v1){
+    int min = INT_MAX;
+    for(auto adj: v1.adjs){
+        min = min > adj.id ? adj.id : min;
     }
-}*/
+    for(auto back_edge: v1.back_edges){
+        min = min > back_edge.id ? back_edge.id : min; 
+    }
+    return min;
+}
 
 /*
 Discharge(u)
