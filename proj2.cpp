@@ -15,16 +15,17 @@ typedef struct vertex{
     int excess_flow;
     int limit;
     std::vector<Edge> adjs;
-    std::vector<Edge> back_edges;
 }Vertex;
 
 
 /*-------------------------------------------------------------------------*/
 int readInput();
 int min(int v1, int v2);
+int min_edges(Vertex v1);
 void printGraph();
 Vertex initializeVertex(int height, int flow, int limit);
 Edge initializeEdge(int capacity, int id, int flow);
+Edge searchBackEdge(std::vector<Edge> e, int id);
 
 /*----------------Global Vars-----------------*/
 std::vector<Vertex> graph;
@@ -85,7 +86,7 @@ int readInput() {
             Edge connection = initializeEdge(capacityConnection, originConnection, 0);
             graph[destinationConnection].adjs.push_back(connection);
             Edge back = initializeEdge(0, destinationConnection, 0);
-            graph[originConnection].back_edges.push_back(connection);
+            graph[originConnection].adjs.push_back(back);
         }
     }
     return 0;
@@ -97,9 +98,6 @@ void printGraph() {
         printf("-------------------%d----------------\n", i);
         printf("altura: %d\nexcesso: %d\nlimite: %d\n", graph[i].height, graph[i].excess_flow, graph[i].limit);
         printf("---------connections-------\n");
-        for(auto adj: graph[i].adjs)
-            printf("capacidade: %d\nid: %d\nflow: %d\n", adj.capacity, adj.id, adj.flow);
-        printf("---------connections back edges-------\n");
         for(auto adj: graph[i].adjs)
             printf("capacidade: %d\nid: %d\nflow: %d\n", adj.capacity, adj.id, adj.flow);
     }
@@ -148,34 +146,33 @@ int min_edges(Vertex v1){
     for(auto adj: v1.adjs){
         min = min > adj.id ? adj.id : min;
     }
-    for(auto back_edge: v1.back_edges){
-        min = min > back_edge.id ? back_edge.id : min; 
-    }
     return min;
+} 
+
+void discharge(Vertex v1, int id){
+    std::vector<Edge>::iterator it = v1.adjs.begin();
+    while(v1.excess_flow > 0){
+        while(it != v1.adjs.end()){
+            Relabel(v1);
+            else if((adj.capacity - adj.flow) > 0 && v1.height > graph[adj.id].height){
+                Edge e = searchBackEdge(graph[adj.id].adjs, id);
+                Push(v1, graph[adj.id], adj, e);
+            }
+            else{
+
+            }
+        }
+        
+    }
 }
 
-/*
-Discharge(u)
-    while (e[u] > 0)
-        do v = current[u]
-            if v = NIL
-                then Relabel(u)
-                    current[u] = head[N[u]]
-            else if cf(u,v) > 0 and h[u] = h[v] +1
-                then Push(u,v)
-            else current[u] = next_neighbor[v]*/
+Edge searchBackEdge(std::vector<Edge> e, int id){
+    Edge e2;
+    for(auto adj : e){
+        if(adj.id == id){
+            return adj;
+        }
+    }
+    return e2;
+}
 
-/*
-Relabel-To-Front(G,s,t)
-    Initialize-Preflow(G,s)
-    L = V − {s,t} por qualquer ordem
-    for each u ∈ V − {s,t}
-        do current[u] = head[N[u]]
-    u = head[L]
-    while u 6= NIL
-        do oldh = h[u]
-            Discharge(u)
-            if h[u] > oldh
-               then colocar u na frente da lista L
-            u = next[u]
-    return f*/
