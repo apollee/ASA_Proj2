@@ -152,17 +152,17 @@ int min_edges(Vertex v1){
 void discharge(Vertex v1, int id){
     std::vector<Edge>::iterator it = v1.adjs.begin();
     while(v1.excess_flow > 0){
-        while(it != v1.adjs.end()){
+        if(it != v1.adjs.end()){
             Relabel(v1);
-            else if((adj.capacity - adj.flow) > 0 && v1.height > graph[adj.id].height){
-                Edge e = searchBackEdge(graph[adj.id].adjs, id);
-                Push(v1, graph[adj.id], adj, e);
-            }
-            else{
-
-            }
+            it = v1.adjs.begin();
         }
-        
+        else if((*it).capacity - ((*it).flow) > 0 && v1.height > graph[(*it).id].height){
+            Edge e = searchBackEdge(graph[(*it).id].adjs, id);
+            Push(v1, graph[(*it).id], adj, e);
+        }
+        else{
+            it++;
+        }
     }
 }
 
@@ -175,4 +175,3 @@ Edge searchBackEdge(std::vector<Edge> e, int id){
     }
     return e2;
 }
-
