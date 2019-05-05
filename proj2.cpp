@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <vector>
 #include <limits.h>
+#include <queue>
 /*-------------------------------------------------------------------------*/
 
 typedef struct edge{
@@ -23,23 +24,29 @@ int readInput();
 int min(int v1, int v2);
 int min_edges(Vertex v1);
 void printGraph();
+void initializeQueue();
 Vertex initializeVertex(int height, int flow, int limit);
 Edge initializeEdge(int capacity, int id, int flow);
 Edge searchBackEdge(std::vector<Edge> e, int id);
+int relabelToFront();
+void initializeQueue();
 
 /*----------------Global Vars-----------------*/
 std::vector<Vertex> graph;
+std::queue<int> queueList;
 int numberSuppliers, numberVertexs;
 int listRelabel;
 
 int main(){
     readInput();
+    relabelToFront();
     printGraph();
 }
 
 
 int readInput() {
     int i;
+    int flow = 0;
     int numberStations, numberConnections;
     int productionOfSupplier, capacityOfStation;
     int originConnection, destinationConnection, capacityConnection;
@@ -83,12 +90,24 @@ int readInput() {
         &capacityConnection) != 3) {
             return -1;
         }else{
-            Edge connection = initializeEdge(capacityConnection, originConnection, 0);
-            graph[destinationConnection].adjs.push_back(connection);
-            Edge back = initializeEdge(0, destinationConnection, 0);
-            graph[originConnection].adjs.push_back(back);
+            if(destinationConnection == 1){
+                flow += graph[originConnection].limit;
+                graph[originConnection].excess_flow = graph[originConnection].limit;
+                Edge connection = initializeEdge(capacityConnection, originConnection, capacityConnection);
+                graph[destinationConnection].adjs.push_back(connection);
+                Edge back = initializeEdge(0, destinationConnection, - capacityConnection);
+                graph[originConnection].adjs.push_back(back);
+            }
+            else{
+                Edge connection = initializeEdge(capacityConnection, originConnection, 0);
+                graph[destinationConnection].adjs.push_back(connection);
+                Edge back = initializeEdge(0, destinationConnection, 0);
+                graph[originConnection].adjs.push_back(back);
+            }
         }
     }
+    graph[1].excess_flow = -flow;
+    
     return 0;
 }
 
@@ -158,7 +177,10 @@ void discharge(Vertex v1, int id){
         }
         else if((*it).capacity - ((*it).flow) > 0 && v1.height > graph[(*it).id].height){
             Edge e = searchBackEdge(graph[(*it).id].adjs, id);
-            Push(v1, graph[(*it).id], adj, e);
+            if(graph[(*it).id].excess_flow == 0){
+                queueList.push((*it).id);
+            }
+            Push(v1, graph[(*it).id], *it, e);
         }
         else{
             it++;
@@ -174,4 +196,23 @@ Edge searchBackEdge(std::vector<Edge> e, int id){
         }
     }
     return e2;
+}
+
+int relabelToFront(){
+    int flow = 0;
+    initializeQueue();
+    while(!queueList.empty()){
+        discharge(graph[queueList.front()], queueList.front());
+        queueList.pop();
+    }
+    return flow;
+}
+
+void initializeQueue(){
+    int i;
+    for(i = 2; i < numberVertexs; i++){
+        if(graph[i].excess_flow > 0){
+            queueList.push(i);
+        } 
+    }
 }
