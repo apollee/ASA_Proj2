@@ -1,5 +1,5 @@
 CC = g++
-CFLAGS = -std=c++11 -O3 -Wall -lm
+CFLAGS = -std=c++11 -Wall -lm -g
 all:
 	g++ ${CFLAGS} -o proj proj2.cpp
 

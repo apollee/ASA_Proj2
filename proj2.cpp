@@ -39,8 +39,9 @@ int listRelabel;
 
 int main(){
     readInput();
-    relabelToFront();
+    relabelToFront(); 
     printGraph();
+    return 0;
 }
 
 
@@ -73,6 +74,8 @@ int readInput() {
             graph.push_back(supplier);
             Edge s_v = initializeEdge(INT_MAX, 0, 0);
             graph[i + 2].adjs.push_back(s_v);
+            Edge back = initializeEdge(0, i + 2, 0);
+            graph[0].adjs.push_back(back);
         }
     }
 
@@ -82,6 +85,7 @@ int readInput() {
         }else{
             Vertex station = initializeVertex(0, 0, capacityOfStation);
             graph.push_back(station);
+            
         }
     }
 
@@ -139,8 +143,11 @@ Edge initializeEdge(int capacity, int id, int flow){
     return e;
 }
 
-void Push(Vertex v1, Vertex v2, Edge edge, Edge back){
+void Push(Vertex &v1, Vertex &v2, Edge &edge, Edge &back){
     int current_flow;
+    if(v2.excess_flow == 0 && edge.id != 0){
+        queueList.push(edge.id);
+    }
     current_flow = min(v1.excess_flow, edge.capacity);
     edge.flow += current_flow;
     back.flow -= current_flow;
@@ -148,7 +155,7 @@ void Push(Vertex v1, Vertex v2, Edge edge, Edge back){
     v2.excess_flow += current_flow;
 }
 
-void Relabel(Vertex v1){
+void Relabel(Vertex &v1){
     v1.height = 1 + min_edges(v1);
 }
 
@@ -163,29 +170,28 @@ int min(int v1, int v2){
 int min_edges(Vertex v1){
     int min = INT_MAX;
     for(auto adj: v1.adjs){
-        min = min > adj.id ? adj.id : min;
+        min = min > graph[adj.id].height ? graph[adj.id].height : min;
     }
     return min;
 } 
 
-void discharge(Vertex v1, int id){
+void discharge(Vertex &v1, int id){
     std::vector<Edge>::iterator it = v1.adjs.begin();
+    printf("%d", id);
     while(v1.excess_flow > 0){
-        if(it != v1.adjs.end()){
+        if(it == v1.adjs.end()){
             Relabel(v1);
             it = v1.adjs.begin();
         }
-        else if((*it).capacity - ((*it).flow) > 0 && v1.height > graph[(*it).id].height){
+        else if(((*it).capacity - (*it).flow) > 0 && v1.height == graph[(*it).id].height + 1){
             Edge e = searchBackEdge(graph[(*it).id].adjs, id);
-            if(graph[(*it).id].excess_flow == 0){
-                queueList.push((*it).id);
-            }
             Push(v1, graph[(*it).id], *it, e);
         }
         else{
             it++;
         }
     }
+    printf("adeus\n");
 }
 
 Edge searchBackEdge(std::vector<Edge> e, int id){
@@ -204,6 +210,7 @@ int relabelToFront(){
     while(!queueList.empty()){
         discharge(graph[queueList.front()], queueList.front());
         queueList.pop();
+        printGraph();
     }
     return flow;
 }
