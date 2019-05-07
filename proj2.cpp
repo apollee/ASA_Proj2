@@ -59,10 +59,10 @@ int readInput() {
         std::vector<Vertex> graph(numberVertexs);
     }
 
-    Vertex target = initializeVertex(0, 0, INT_MAX);
+    Vertex target = initializeVertex(0, 0, 1000000);
     graph.push_back(target);
 
-    Vertex source = initializeVertex(numberVertexs, 0 , 10000000);
+    Vertex source = initializeVertex(numberVertexs, 0 , 1000000);
     graph.push_back(source);
 
   
@@ -172,7 +172,7 @@ int min(int v1, int v2){
 int min_edges(Vertex v1){
     int min = INT_MAX;
     for(auto adj: v1.adjs){
-        if((graph[adj.id].limit - graph[adj.id].excess_flow) > 0)
+        if((graph[adj.id].limit - graph[adj.id].excess_flow) > 0 && (adj.capacity - adj.flow) > 0)
             min = min > graph[adj.id].height ? graph[adj.id].height : min;
     }
     return min;
@@ -213,7 +213,6 @@ int relabelToFront(){
     while(!queueList.empty()){
         discharge(graph[queueList.front()], queueList.front());
         queueList.pop();
-        printGraph();
     }
     return flow;
 }
