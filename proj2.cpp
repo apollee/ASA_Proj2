@@ -62,7 +62,7 @@ int readInput() {
     Vertex target = initializeVertex(0, 0, INT_MAX);
     graph.push_back(target);
 
-    Vertex source = initializeVertex(numberVertexs, 0 , 0);
+    Vertex source = initializeVertex(numberVertexs, 0 , 10000000);
     graph.push_back(source);
 
   
@@ -145,14 +145,16 @@ Edge initializeEdge(int capacity, int id, int flow){
 
 void Push(Vertex &v1, Vertex &v2, Edge &edge, Edge &back){
     int current_flow;
+    int limit;
     if(v2.excess_flow == 0 && edge.id != 0){
         queueList.push(edge.id);
     }
-    current_flow = min(v1.excess_flow, edge.capacity);
-    edge.flow += current_flow;
-    back.flow -= current_flow;
-    v1.excess_flow -= current_flow;
-    v2.excess_flow += current_flow;
+    current_flow = min(v1.excess_flow, edge.capacity - edge.flow);
+    limit = min(current_flow, v2.limit - v2.excess_flow);
+    edge.flow += limit;
+    back.flow -= limit;
+    v1.excess_flow -= limit;
+    v2.excess_flow += limit;
 }
 
 void Relabel(Vertex &v1){
@@ -170,7 +172,8 @@ int min(int v1, int v2){
 int min_edges(Vertex v1){
     int min = INT_MAX;
     for(auto adj: v1.adjs){
-        min = min > graph[adj.id].height ? graph[adj.id].height : min;
+        if((graph[adj.id].limit - graph[adj.id].excess_flow) > 0)
+            min = min > graph[adj.id].height ? graph[adj.id].height : min;
     }
     return min;
 } 
@@ -183,7 +186,7 @@ void discharge(Vertex &v1, int id){
             Relabel(v1);
             it = v1.adjs.begin();
         }
-        else if(((*it).capacity - (*it).flow) > 0 && v1.height == graph[(*it).id].height + 1){
+        else if(((*it).capacity - (*it).flow) > 0 && v1.height == graph[(*it).id].height + 1 && (graph[(*it).id].limit - graph[(*it).id].excess_flow ) > 0){
             Edge e = searchBackEdge(graph[(*it).id].adjs, id);
             Push(v1, graph[(*it).id], *it, e);
         }
