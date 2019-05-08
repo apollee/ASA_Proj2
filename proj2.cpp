@@ -39,15 +39,14 @@ int listRelabel;
 
 int main(){
     readInput();
-    printGraph();
     relabelToFront(); 
-    printGraph();
     printf("FLUXO: %d\n", graph[0].excess_flow);
-    for(int i = numberSuppliers + 2; i < numberVertexs; i++){   
+    for(int i = numberSuppliers + 2; i < numberVertexs + 1; i++){   
         if(graph[i].height >= graph[1].height){
-            printf(" %d\n", i);
+            printf(" %d", i);
         }
     }
+    printf("\n");
     return 0;
 }
 
@@ -187,7 +186,6 @@ int min_edges(Vertex v1){
 
 void discharge(Vertex &v1, int id){
     std::vector<Edge>::iterator it = v1.adjs.begin();
-    printf("%d", id);
     while(v1.excess_flow > 0){
         if(it == v1.adjs.end()){
             Relabel(v1);
@@ -201,7 +199,6 @@ void discharge(Vertex &v1, int id){
             it++;
         }
     }
-    printf("adeus\n");
 }
 
 int searchBackEdge(std::vector<Edge> e, int id){
