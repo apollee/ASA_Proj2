@@ -61,10 +61,10 @@ int readInput() {
         std::vector<Vertex> graph(numberVertexs);
     }
 
-    Vertex target = initializeVertex(0, 0, INT_MAX);
+    Vertex target = initializeVertex(0, 0, 10000000);
     graph.push_back(target);
 
-    Vertex source = initializeVertex(numberVertexs, 0 , INT_MAX);
+    Vertex source = initializeVertex(numberVertexs, 0 , 10000000);
     graph.push_back(source);
 
   

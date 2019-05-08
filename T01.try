@@ -1,0 +1,149 @@
+-------------------0----------------
+altura: 0
+excesso: 0
+limite: 10000000
+---------connections-------
+capacidade: 0
+id: 2
+flow: 0
+capacidade: 0
+id: 3
+flow: 0
+capacidade: 0
+id: 4
+flow: 0
+-------------------1----------------
+altura: 6
+excesso: -140
+limite: 10000000
+---------connections-------
+capacidade: 70
+id: 4
+flow: 40
+capacidade: 200
+id: 5
+flow: 100
+-------------------2----------------
+altura: 0
+excesso: 0
+limite: 50
+---------connections-------
+capacidade: 2147483647
+id: 0
+flow: 0
+capacidade: 0
+id: 5
+flow: 0
+-------------------3----------------
+altura: 0
+excesso: 0
+limite: 70
+---------connections-------
+capacidade: 2147483647
+id: 0
+flow: 0
+capacidade: 0
+id: 5
+flow: 0
+-------------------4----------------
+altura: 0
+excesso: 40
+limite: 40
+---------connections-------
+capacidade: 2147483647
+id: 0
+flow: 0
+capacidade: 0
+id: 1
+flow: -40
+-------------------5----------------
+altura: 0
+excesso: 100
+limite: 100
+---------connections-------
+capacidade: 60
+id: 2
+flow: 0
+capacidade: 60
+id: 3
+flow: 0
+capacidade: 0
+id: 1
+flow: -100
+4adeus
+5adeus
+2adeus
+3adeus
+-------------------0----------------
+altura: 0
+excesso: 140
+limite: 10000000
+---------connections-------
+capacidade: 0
+id: 2
+flow: -50
+capacidade: 0
+id: 3
+flow: -50
+capacidade: 0
+id: 4
+flow: -40
+-------------------1----------------
+altura: 6
+excesso: -140
+limite: 10000000
+---------connections-------
+capacidade: 70
+id: 4
+flow: 40
+capacidade: 200
+id: 5
+flow: 100
+-------------------2----------------
+altura: 1
+excesso: 0
+limite: 50
+---------connections-------
+capacidade: 2147483647
+id: 0
+flow: 50
+capacidade: 0
+id: 5
+flow: -50
+-------------------3----------------
+altura: 1
+excesso: 0
+limite: 70
+---------connections-------
+capacidade: 2147483647
+id: 0
+flow: 50
+capacidade: 0
+id: 5
+flow: -50
+-------------------4----------------
+altura: 1
+excesso: 0
+limite: 40
+---------connections-------
+capacidade: 2147483647
+id: 0
+flow: 40
+capacidade: 0
+id: 1
+flow: -40
+-------------------5----------------
+altura: 1
+excesso: 0
+limite: 100
+---------connections-------
+capacidade: 60
+id: 2
+flow: 50
+capacidade: 60
+id: 3
+flow: 50
+capacidade: 0
+id: 1
+flow: -100
+FLUXO: 140
