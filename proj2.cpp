@@ -39,10 +39,15 @@ int listRelabel;
 
 int main(){
     readInput();
-    printGraph();
+    /*printGraph();*/
     relabelToFront(); 
     printGraph();
     printf("FLUXO: %d\n", graph[0].excess_flow);
+    for(int i = numberSuppliers + 2; i < numberVertexs; i++){   
+        if(graph[i].height >= graph[1].height){
+            printf(" %d\n", i);
+        }
+    }
     return 0;
 }
 
@@ -61,10 +66,10 @@ int readInput() {
         std::vector<Vertex> graph(numberVertexs);
     }
 
-    Vertex target = initializeVertex(0, 0, 10000000);
+    Vertex target = initializeVertex(0, 0, 100000000);
     graph.push_back(target);
 
-    Vertex source = initializeVertex(numberVertexs, 0 , 10000000);
+    Vertex source = initializeVertex(numberVertexs, 0 , 1000000000);
     graph.push_back(source);
 
   
