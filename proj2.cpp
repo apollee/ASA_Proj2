@@ -27,7 +27,7 @@ void printGraph();
 void initializeQueue();
 Vertex initializeVertex(int height, int flow, int limit);
 Edge initializeEdge(int capacity, int id, int flow);
-Edge searchBackEdge(std::vector<Edge> e, int id);
+int searchBackEdge(std::vector<Edge> e, int id);
 int relabelToFront();
 void initializeQueue();
 
@@ -39,8 +39,10 @@ int listRelabel;
 
 int main(){
     readInput();
+    printGraph();
     relabelToFront(); 
     printGraph();
+    printf("FLUXO: %d\n", graph[0].excess_flow);
     return 0;
 }
 
@@ -59,10 +61,10 @@ int readInput() {
         std::vector<Vertex> graph(numberVertexs);
     }
 
-    Vertex target = initializeVertex(0, 0, 1000000);
+    Vertex target = initializeVertex(0, 0, INT_MAX);
     graph.push_back(target);
 
-    Vertex source = initializeVertex(numberVertexs, 0 , 1000000);
+    Vertex source = initializeVertex(numberVertexs, 0 , INT_MAX);
     graph.push_back(source);
 
   
@@ -96,10 +98,10 @@ int readInput() {
         }else{
             if(destinationConnection == 1){
                 flow += graph[originConnection].limit;
-                graph[originConnection].excess_flow = graph[originConnection].limit;
-                Edge connection = initializeEdge(capacityConnection, originConnection, capacityConnection);
+                graph[originConnection].excess_flow = min(graph[originConnection].limit, capacityConnection);
+                Edge connection = initializeEdge(capacityConnection, originConnection, min(graph[originConnection].limit, capacityConnection));
                 graph[destinationConnection].adjs.push_back(connection);
-                Edge back = initializeEdge(0, destinationConnection, - capacityConnection);
+                Edge back = initializeEdge(0, destinationConnection, - min(graph[originConnection].limit, capacityConnection));
                 graph[originConnection].adjs.push_back(back);
             }
             else{
@@ -143,7 +145,7 @@ Edge initializeEdge(int capacity, int id, int flow){
     return e;
 }
 
-void Push(Vertex &v1, Vertex &v2, Edge &edge, Edge &back){
+void Push(Vertex &v1, Vertex &v2, Edge &edge, int index){
     int current_flow;
     int limit;
     if(v2.excess_flow == 0 && edge.id != 0){
@@ -152,7 +154,7 @@ void Push(Vertex &v1, Vertex &v2, Edge &edge, Edge &back){
     current_flow = min(v1.excess_flow, edge.capacity - edge.flow);
     limit = min(current_flow, v2.limit - v2.excess_flow);
     edge.flow += limit;
-    back.flow -= limit;
+    v2.adjs[index].flow -= limit;
     v1.excess_flow -= limit;
     v2.excess_flow += limit;
 }
@@ -187,7 +189,7 @@ void discharge(Vertex &v1, int id){
             it = v1.adjs.begin();
         }
         else if(((*it).capacity - (*it).flow) > 0 && v1.height == graph[(*it).id].height + 1 && (graph[(*it).id].limit - graph[(*it).id].excess_flow ) > 0){
-            Edge e = searchBackEdge(graph[(*it).id].adjs, id);
+            int e = searchBackEdge(graph[(*it).id].adjs, id);
             Push(v1, graph[(*it).id], *it, e);
         }
         else{
@@ -197,14 +199,15 @@ void discharge(Vertex &v1, int id){
     printf("adeus\n");
 }
 
-Edge searchBackEdge(std::vector<Edge> e, int id){
-    Edge e2;
+int searchBackEdge(std::vector<Edge> e, int id){
+    int i = 0;
     for(auto adj : e){
         if(adj.id == id){
-            return adj;
+            return i;
         }
+        i++;
     }
-    return e2;
+    return -1;
 }
 
 int relabelToFront(){
