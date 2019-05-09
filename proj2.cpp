@@ -3,6 +3,8 @@
 #include <vector>
 #include <limits.h>
 #include <queue>
+#include <utility>
+#include <algorithm>
 /*-------------------------------------------------------------------------*/
 
 typedef struct edge{
@@ -14,7 +16,6 @@ typedef struct edge{
 typedef struct vertex{
     int height;
     int excess_flow;
-    int limit;
     std::vector<Edge> adjs;
 }Vertex;
 
@@ -25,7 +26,7 @@ int min(int v1, int v2);
 int min_edges(Vertex v1);
 void printGraph();
 void initializeQueue();
-Vertex initializeVertex(int height, int flow, int limit);
+Vertex initializeVertex(int height, int flow);
 Edge initializeEdge(int capacity, int id, int flow);
 int searchBackEdge(std::vector<Edge> e, int id);
 int relabelToFront();
@@ -33,20 +34,48 @@ void initializeQueue();
 
 /*----------------Global Vars-----------------*/
 std::vector<Vertex> graph;
+std::vector<Vertex> graphAux;
+std::vector<std::pair<int,int>> toSort;
 std::queue<int> queueList;
-int numberSuppliers, numberVertexs;
+int numberSuppliers, numberVertexs, numberStations;
 int listRelabel;
 
 int main(){
     readInput();
     relabelToFront(); 
-    printf("FLUXO: %d\n", graph[0].excess_flow);
-    for(int i = numberSuppliers + 2; i < numberVertexs + 1; i++){   
-        if(graph[i].height >= graph[1].height){
-            printf(" %d", i);
+    printf("%d\n", graph[0].excess_flow);
+
+    int counter = 0;
+    for(int i = numberSuppliers + 2; i < numberVertexs; i++){   
+        if(graph[i].height >= graph[1].height && graph[i+ numberStations].height < graph[1].height){
+            if(counter == 0){
+                printf("%d", i);
+                counter++;
+            }
+            else{
+                printf(" %d", i);
+            }
         }
     }
     printf("\n");
+    for (int i = 2; i < numberVertexs; i++) {
+        for (auto edge : graph[i].adjs) {
+            if (graph[edge.id].height >= graph[1].height && graph[i].height < graph[1].height){
+                if(edge.id > numberVertexs -1){
+                    toSort.push_back(std::make_pair(i, edge.id-numberStations));
+                    /*printf("%d %d aresta \n", i, edge.id - numberStations);*/
+                }
+                else{
+                    toSort.push_back(std::make_pair(i, edge.id));
+                    /*printf("%d %d aresta \n", i, edge.id);*/
+                }
+            }
+        }
+    }
+    sort(toSort.begin(), toSort.end());
+    for(unsigned int i = 0; i < toSort.size(); i++){
+        printf("%d %d\n", toSort[i].first, toSort[i].second);
+    }
     return 0;
 }
 
@@ -54,7 +83,7 @@ int main(){
 int readInput() {
     int i;
     int flow = 0;
-    int numberStations, numberConnections;
+    int numberConnections;
     int productionOfSupplier, capacityOfStation;
     int originConnection, destinationConnection, capacityConnection;
 
@@ -63,12 +92,13 @@ int readInput() {
     }else{
         numberVertexs = numberSuppliers + numberStations + 2;
         std::vector<Vertex> graph(numberVertexs);
+        std::vector<Vertex> graphAux(numberStations);
     }
 
-    Vertex target = initializeVertex(0, 0, 100000000);
+    Vertex target = initializeVertex(0, 0);
     graph.push_back(target);
 
-    Vertex source = initializeVertex(numberVertexs, 0 , 1000000000);
+    Vertex source = initializeVertex(numberVertexs + numberStations, 0);
     graph.push_back(source);
 
   
@@ -76,24 +106,31 @@ int readInput() {
         if(scanf("%d ", &productionOfSupplier) != 1) {
             return -1;
         }else{
-            Vertex supplier = initializeVertex(0, 0, productionOfSupplier);
+            Vertex supplier = initializeVertex(0, 0);
             graph.push_back(supplier);
-            Edge s_v = initializeEdge(INT_MAX, 0, 0);
+            Edge s_v = initializeEdge(productionOfSupplier, 0, 0);
             graph[i + 2].adjs.push_back(s_v);
             Edge back = initializeEdge(0, i + 2, 0);
             graph[0].adjs.push_back(back);
         }
     }
 
-    for(i = 0; i < numberStations; i++) {
+    for(i = 2 + numberSuppliers; i < numberVertexs; i++) {
         if(scanf("%d ", &capacityOfStation) != 1) {
             return -1;
         }else{
-            Vertex station = initializeVertex(0, 0, capacityOfStation);
+            Vertex station = initializeVertex(0, 0);
+            Vertex station_dup = initializeVertex(0, 0);
+            Edge connection = initializeEdge(capacityOfStation, i + numberStations, 0);
+            Edge back = initializeEdge(0, i, 0);
             graph.push_back(station);
-            
+            graph[i].adjs.push_back(connection);
+            graphAux.push_back(station_dup);
+            graphAux[i - 2 - numberSuppliers].adjs.push_back(back);
         }
     }
+
+    graph.insert(graph.end(), graphAux.begin(), graphAux.end());
 
     for(i = 0; i < numberConnections; i++) {
         if(scanf("%d %d %d", &originConnection, &destinationConnection,
@@ -101,11 +138,17 @@ int readInput() {
             return -1;
         }else{
             if(destinationConnection == 1){
-                flow += graph[originConnection].limit;
-                graph[originConnection].excess_flow = min(graph[originConnection].limit, capacityConnection);
-                Edge connection = initializeEdge(capacityConnection, originConnection, min(graph[originConnection].limit, capacityConnection));
+                flow += capacityConnection;
+                graph[originConnection].excess_flow = capacityConnection;
+                Edge connection = initializeEdge(capacityConnection, originConnection, capacityConnection);
                 graph[destinationConnection].adjs.push_back(connection);
-                Edge back = initializeEdge(0, destinationConnection, - min(graph[originConnection].limit, capacityConnection));
+                Edge back = initializeEdge(0, destinationConnection, - capacityConnection);
+                graph[originConnection].adjs.push_back(back);
+            }
+            else if(destinationConnection >= numberSuppliers + 2){
+                Edge connection = initializeEdge(capacityConnection, originConnection, 0);
+                graph[destinationConnection + numberStations].adjs.push_back(connection);
+                Edge back = initializeEdge(0, destinationConnection + numberStations, 0);
                 graph[originConnection].adjs.push_back(back);
             }
             else{
@@ -117,27 +160,24 @@ int readInput() {
         }
     }
     graph[1].excess_flow = -flow;
-    
     return 0;
 }
 
 void printGraph() {
     int i;
-     for(i = 0; i < numberVertexs; i++){
+     for(i = 0; i < numberVertexs + numberStations; i++){
         printf("-------------------%d----------------\n", i);
-        printf("altura: %d\nexcesso: %d\nlimite: %d\n", graph[i].height, graph[i].excess_flow, graph[i].limit);
+        printf("altura: %d\nexcesso: %d\n", graph[i].height, graph[i].excess_flow);
         printf("---------connections-------\n");
         for(auto adj: graph[i].adjs)
             printf("capacidade: %d\nid: %d\nflow: %d\n", adj.capacity, adj.id, adj.flow);
     }
 }
 
-
-Vertex initializeVertex(int height, int flow, int limit){
+Vertex initializeVertex(int height, int flow){
     Vertex v;
     v.height = height;
     v.excess_flow = flow;
-    v.limit = limit;
     return v;
 }
 
@@ -150,13 +190,11 @@ Edge initializeEdge(int capacity, int id, int flow){
 }
 
 void Push(Vertex &v1, Vertex &v2, Edge &edge, int index){
-    int current_flow;
     int limit;
     if(v2.excess_flow == 0 && edge.id != 0){
         queueList.push(edge.id);
     }
-    current_flow = min(v1.excess_flow, edge.capacity - edge.flow);
-    limit = min(current_flow, v2.limit - v2.excess_flow);
+    limit = min(v1.excess_flow, edge.capacity - edge.flow);
     edge.flow += limit;
     v2.adjs[index].flow -= limit;
     v1.excess_flow -= limit;
@@ -178,7 +216,7 @@ int min(int v1, int v2){
 int min_edges(Vertex v1){
     int min = INT_MAX;
     for(auto adj: v1.adjs){
-        if((graph[adj.id].limit - graph[adj.id].excess_flow) > 0 && (adj.capacity - adj.flow) > 0)
+        if((adj.capacity - adj.flow) > 0)
             min = min > graph[adj.id].height ? graph[adj.id].height : min;
     }
     return min;
@@ -191,7 +229,7 @@ void discharge(Vertex &v1, int id){
             Relabel(v1);
             it = v1.adjs.begin();
         }
-        else if(((*it).capacity - (*it).flow) > 0 && v1.height == graph[(*it).id].height + 1 && (graph[(*it).id].limit - graph[(*it).id].excess_flow ) > 0){
+        else if(((*it).capacity - (*it).flow) > 0 && v1.height == graph[(*it).id].height + 1){
             int e = searchBackEdge(graph[(*it).id].adjs, id);
             Push(v1, graph[(*it).id], *it, e);
         }
